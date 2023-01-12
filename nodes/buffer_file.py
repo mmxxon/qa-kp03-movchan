@@ -50,11 +50,13 @@ class BufferFile:
                 " cannot be extended due to exceeding MAX_BUF_FILE_SIZE of ",
                 self.MAX_BUF_FILE_SIZE,
             )
-        self.content.append(element)
+        else:
+            self.content.append(element)
 
     def pop(self):
         if len(self.content) == 0:
             print("Cannot pop element due to zero length")
-        element = self.content[0]
-        self.content.pop(0)
-        return element
+        else:
+            element = self.content[0]
+            self.content.pop(0)
+            return element

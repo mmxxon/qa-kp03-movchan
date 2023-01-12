@@ -2,7 +2,7 @@ from nodes.directory import Directory
 
 
 class LogTextFile:
-    def __init__(self, name, parent_dir: Directory | None) -> None:
+    def __init__(self, name, parent_dir: Directory | None = None) -> None:
         self.name = name
         self.parent_dir = parent_dir
         self.info = ""
@@ -36,7 +36,8 @@ class LogTextFile:
             " to ",
             new_parent_dir.name,
         )
-        self.delete()
+        if self.parent_dir != None:
+            self.parent_dir.children.remove(self)
         self.parent_dir = new_parent_dir
         new_parent_dir.children.append(self)
 

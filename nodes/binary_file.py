@@ -2,7 +2,7 @@ from nodes.directory import Directory
 
 
 class BinaryFile:
-    def __init__(self, name, parent_dir: Directory | None, info) -> None:
+    def __init__(self, name, info, parent_dir: Directory | None = None) -> None:
         self.name = name
         self.parent_dir = parent_dir
         self.info = info
