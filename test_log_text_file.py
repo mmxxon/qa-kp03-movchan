@@ -51,7 +51,7 @@ class TestLogTextFile:
         file1_info = "test"
         file1 = LogTextFile(file1_name)
         file1.append(file1_info)
-        assert file1.readfile() == file1_info
+        assert file1.info == file1_info
         file1_info2 = "test2"
         file1.append(file1_info2)
-        assert file1.readfile() == "testtest2"
+        assert file1.info == "testtest2"
