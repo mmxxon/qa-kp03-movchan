@@ -1,9 +1,11 @@
 from nodes.directory import Directory
 from nodes.log_text_file import LogTextFile
-from server import root, app, goto_dir
-from flask import Flask, request, jsonify
+from server.utils import goto_dir
+from flask import request, jsonify, Blueprint
 
-@app.route('/log_text_file', method='GET')
+log_text_file_server = Blueprint('log_text_file_server', __name__)
+
+@log_text_file_server.route('/log_text_file', methods=['GET'])
 def get_log_text_file():
     path = request.args.get('path')
     try:
@@ -14,9 +16,9 @@ def get_log_text_file():
         return 'Wrong Path', 400
     except:
         return 'Not found', 404
-    return jsonify(name = file.name, path = path, content = file.readfile())
+    return jsonify(name = file.name, path = path, info = file.readfile())
 
-@app.route('/log_text_file', methods=['POST', 'PUT'])
+@log_text_file_server.route('/log_text_file', methods=['POST', 'PUT'])
 def add_log_text_file():
     body = request.json
     if not all(key in body for key in ('name', 'path')):
@@ -25,6 +27,8 @@ def add_log_text_file():
         dir: Directory = goto_dir(body['path'])
         if not type(dir) == Directory:
             raise ValueError()
+        if len(list(filter(lambda a: a.name == body['name'], dir.children))) > 0:
+            raise SystemError("Path was already taken")
         LogTextFile(body['name'], dir)
     except ValueError:
         return 'Wrong Path', 400
@@ -32,8 +36,9 @@ def add_log_text_file():
         return str(error), 400
     except:
         return 'Wrong Request', 400
+    return 'Created log file', 200
 
-@app.route('/log_text_file', method='DELETE')
+@log_text_file_server.route('/log_text_file', methods=['DELETE'])
 def delete_log_text_file():
     path = request.args.get('path')
     try:
@@ -45,13 +50,14 @@ def delete_log_text_file():
         return 'Wrong Path', 400
     except:
         return 'Not found', 404
+    return 'Deleted log file', 200
 
-@app.route('/log_text_file', methods=['UPDATE', 'PATCH', 'POST'])
-def update_log_text_file():
+@log_text_file_server.route('/log_text_file', methods=['UPDATE'])
+def move_log_text_file():
     path = request.args.get('path')
     new_path = request.args.get('new_path')
     try:
-        file: Directory = goto_dir(path)
+        file: LogTextFile = goto_dir(path)
         new_parent = goto_dir(new_path)
         if not (type(file) == LogTextFile and type(new_parent) == Directory):
             raise ValueError()
@@ -62,4 +68,23 @@ def update_log_text_file():
         return str(error), 400
     except:
         return 'Wrong Request', 400
-    return 200
+    return 'Moved log file', 200
+
+@log_text_file_server.route('/log_text_file', methods=['PATCH'])
+def append_log_text_file():
+    path = request.args.get('path')
+    info = request.args.get('info')
+    try:
+        file: LogTextFile = goto_dir(path)
+        if not type(file) == LogTextFile:
+            raise ValueError()
+        if not type(info) == str:
+            raise SystemError("Info must be text")
+        file.append(info)
+    except ValueError:
+        return 'Wrong Path', 400
+    except SystemError as error:
+        return str(error), 400
+    except:
+        return 'Wrong Request', 400
+    return 'Added info to log file', 200

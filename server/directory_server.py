@@ -1,9 +1,11 @@
 from nodes.directory import Directory
-from server import root, app, goto_dir
-from flask import Flask, request, jsonify, current_app
-from functools import wraps
+from flask import current_app
+from server.utils import goto_dir, root
+from flask import request, jsonify, Blueprint
 
-@app.route('/directory', method='GET')
+directory_server = Blueprint('directory_server', __name__)
+
+@directory_server.route('/directory', methods=['GET'])
 def get_directory():
     path = request.args.get('path')
     try:
@@ -14,9 +16,9 @@ def get_directory():
         return 'Wrong Path', 400
     except:
         return 'Not found', 404
-    return jsonify(name = dir.name, path = path, children = dir.children)
+    return jsonify(name = dir.name, path = path, children = [{"name": key.name, "type": str(type(key).__name__).lower()} for key in dir.children])
 
-@app.route('/directory', methods=['POST', 'PUT'])
+@directory_server.route('/directory', methods=['POST', 'PUT'])
 def add_directory():
     body = request.json
     if not all(key in body for key in ('name', 'max_elems', 'path')):
@@ -25,6 +27,8 @@ def add_directory():
         dir: Directory = goto_dir(body['path'])
         if not type(dir) == Directory:
             raise ValueError()
+        if len(list(filter(lambda a: a.name == body['name'], dir.children))) > 0:
+            raise SystemError("Path was already taken")
         Directory(body['name'], body['max_elems'], dir)
     except ValueError:
         return 'Wrong Path', 400
@@ -32,22 +36,28 @@ def add_directory():
         return str(error), 400
     except:
         return 'Wrong Request', 400
+    return 'Created directory', 200
 
-@app.route('/directory', method='DELETE')
+@directory_server.route('/directory', methods=['DELETE'])
 def delete_directory():
     path = request.args.get('path')
     try:
         dir: Directory = goto_dir(path)
         if not type(dir) == Directory:
             raise ValueError()
+        if dir == root:
+            raise SystemError("Cannot delete root")
         dir.delete()
+    except SystemError as error:
+        return str(error), 400
     except ValueError:
         return 'Wrong Path', 400
     except:
         return 'Not found', 404
+    return 'Deleted directory', 200
 
-@app.route('/directory', methods=['UPDATE', 'PATCH', 'POST'])
-def update_directory():
+@directory_server.route('/directory', methods=['UPDATE', 'PATCH'])
+def move_directory():
     path = request.args.get('path')
     new_path = request.args.get('new_path')
     try:
@@ -62,4 +72,4 @@ def update_directory():
         return str(error), 400
     except:
         return 'Wrong Request', 400
-    return 200
+    return 'Moved directory', 200

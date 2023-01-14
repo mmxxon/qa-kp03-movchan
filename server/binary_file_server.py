@@ -1,9 +1,11 @@
 from nodes.binary_file import BinaryFile
 from nodes.directory import Directory
-from server import root, app, goto_dir
-from flask import Flask, request, jsonify
+from server.utils import goto_dir
+from flask import request, jsonify, Blueprint
 
-@app.route('/binary_file', method='GET')
+binary_file_server = Blueprint('binary_file_server', __name__)
+
+@binary_file_server.route('/binary_file', methods=['GET'])
 def get_binary_file():
     path = request.args.get('path')
     try:
@@ -16,7 +18,7 @@ def get_binary_file():
         return 'Not found', 404
     return jsonify(name = file.name, path = path, content = file.readfile())
 
-@app.route('/binary_file', methods=['POST', 'PUT'])
+@binary_file_server.route('/binary_file', methods=['POST', 'PUT'])
 def add_binary_file():
     body = request.json
     if not all(key in body for key in ('name', 'info', 'path')):
@@ -25,6 +27,8 @@ def add_binary_file():
         dir: Directory = goto_dir(body['path'])
         if not type(dir) == Directory:
             raise ValueError()
+        if len(list(filter(lambda a: a.name == body['name'], dir.children))) > 0:
+            raise SystemError("Path was already taken")
         BinaryFile(body['name'], body['info'], dir)
     except ValueError:
         return 'Wrong Path', 400
@@ -32,8 +36,9 @@ def add_binary_file():
         return str(error), 400
     except:
         return 'Wrong Request', 400
+    return 'Created binary file', 200
 
-@app.route('/binary_file', method='DELETE')
+@binary_file_server.route('/binary_file', methods=['DELETE'])
 def delete_binary_file():
     path = request.args.get('path')
     try:
@@ -45,8 +50,9 @@ def delete_binary_file():
         return 'Wrong Path', 400
     except:
         return 'Not found', 404
+    return 'Deleted binary file', 200
 
-@app.route('/binary_file', methods=['UPDATE', 'PATCH', 'POST'])
+@binary_file_server.route('/binary_file', methods=['UPDATE', 'PATCH'])
 def move_binary_file():
     path = request.args.get('path')
     new_path = request.args.get('new_path')
@@ -62,4 +68,4 @@ def move_binary_file():
         return str(error), 400
     except:
         return 'Wrong Request', 400
-    return 200
+    return 'Moved binary file', 200
