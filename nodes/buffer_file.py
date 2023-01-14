@@ -60,3 +60,6 @@ class BufferFile:
             element = self.content[0]
             self.content.pop(0)
             return element
+
+    def readfile(self):
+        return self.content
