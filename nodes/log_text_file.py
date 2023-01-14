@@ -11,7 +11,7 @@ class LogTextFile:
                 self.parent_dir.children.append(self)
                 print("Created log file ", self.name, " under", self.parent_dir.name)
             else:
-                print(
+                raise SystemError(
                     "Log tex file ",
                     self.name,
                     " cannot be created under ",
@@ -28,6 +28,15 @@ class LogTextFile:
             self.parent_dir.children.remove(self)
 
     def move(self, new_parent_dir: "Directory"):
+        if (len(new_parent_dir.children) == new_parent_dir.DIR_MAX_ELEMS):
+            raise SystemError(
+                "LogTextFile ",
+                self.name,
+                " cannot be moved to ",
+                new_parent_dir.name,
+                " due to exceeding DIR_MAX_ELEMS of ",
+                new_parent_dir.DIR_MAX_ELEMS,
+            )
         print(
             "Moved log file ",
             self.name,

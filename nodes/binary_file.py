@@ -11,7 +11,7 @@ class BinaryFile:
                 self.parent_dir.children.append(self)
                 print("Created binary file ", self.name, " under", self.parent_dir.name)
             else:
-                print(
+                raise SystemError(
                     "Binary file ",
                     self.name,
                     " cannot be created under ",
@@ -28,6 +28,15 @@ class BinaryFile:
             self.parent_dir.children.remove(self)
 
     def move(self, new_parent_dir: "Directory"):
+        if (len(new_parent_dir.children) == new_parent_dir.DIR_MAX_ELEMS):
+            raise SystemError(
+                "BinaryFile ",
+                self.name,
+                " cannot be moved to ",
+                new_parent_dir.name,
+                " due to exceeding DIR_MAX_ELEMS of ",
+                new_parent_dir.DIR_MAX_ELEMS,
+            )
         print(
             "Moved binary file ",
             self.name,

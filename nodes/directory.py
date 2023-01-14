@@ -14,7 +14,7 @@ class Directory:
                 self.parent_dir.children.append(self)
                 print("Created directory ", self.name, " under", self.parent_dir.name)
             else:
-                print(
+                raise SystemError(
                     "Directory ",
                     self.name,
                     " cannot be created under ",
@@ -36,6 +36,15 @@ class Directory:
         return self.children
 
     def move(self, new_parent_dir: "Directory"):
+        if (len(new_parent_dir.children) == new_parent_dir.DIR_MAX_ELEMS):
+            raise SystemError(
+                "Directory ",
+                self.name,
+                " cannot be moved to ",
+                new_parent_dir.name,
+                " due to exceeding DIR_MAX_ELEMS of ",
+                new_parent_dir.DIR_MAX_ELEMS,
+            )
         print(
             "Moved directory ",
             self.name,

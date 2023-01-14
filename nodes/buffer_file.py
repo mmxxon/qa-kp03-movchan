@@ -2,9 +2,9 @@ from nodes.directory import Directory
 
 
 class BufferFile:
-    def __init__(self, name: str, maxSize, parent_dir: Directory | None = None):
+    def __init__(self, name: str, max_size, parent_dir: Directory | None = None):
         self.name = name
-        self.MAX_BUF_FILE_SIZE = maxSize
+        self.MAX_BUF_FILE_SIZE = max_size
         self.parent_dir = parent_dir
         self.content = []
         if parent_dir is not None:
@@ -12,7 +12,7 @@ class BufferFile:
                 self.parent_dir.children.append(self)
                 print("Created buffer file ", self.name, " under", self.parent_dir.name)
             else:
-                print(
+                raise SystemError(
                     "Buffer file ",
                     self.name,
                     " cannot be created under ",
@@ -29,6 +29,15 @@ class BufferFile:
             self.parent_dir.children.remove(self)
 
     def move(self, new_parent_dir: "Directory"):
+        if (len(new_parent_dir.children) == new_parent_dir.DIR_MAX_ELEMS):
+            raise SystemError(
+                "BufferFile ",
+                self.name,
+                " cannot be moved to ",
+                new_parent_dir.name,
+                " due to exceeding DIR_MAX_ELEMS of ",
+                new_parent_dir.DIR_MAX_ELEMS,
+            )
         print(
             "Moved buffer file ",
             self.name,
@@ -44,7 +53,7 @@ class BufferFile:
 
     def push(self, element):
         if self.MAX_BUF_FILE_SIZE == len(self.content):
-            print(
+            raise SystemError(
                 "Buffer file ",
                 self.name,
                 " cannot be extended due to exceeding MAX_BUF_FILE_SIZE of ",
@@ -55,8 +64,11 @@ class BufferFile:
 
     def pop(self):
         if len(self.content) == 0:
-            print("Cannot pop element due to zero length")
+            raise SystemError("Cannot pop element due to zero length")
         else:
             element = self.content[0]
             self.content.pop(0)
             return element
+
+    def readfile(self):
+        return self.content

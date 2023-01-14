@@ -60,3 +60,10 @@ class TestBufferFile:
         assert file1.content == []
         file1.pop()
         assert file1.content == []
+    def test_readfile(self):
+        file1_name = "file"
+        file1_info = "test"
+        file1_maxsize = 2
+        file1 = BufferFile(file1_name, file1_maxsize)
+        file1.push("test")
+        assert file1.readfile() == file1_info
