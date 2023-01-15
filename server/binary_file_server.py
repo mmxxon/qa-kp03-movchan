@@ -16,7 +16,7 @@ def get_binary_file():
         return 'Wrong Path', 400
     except:
         return 'Not found', 404
-    return jsonify(name = file.name, path = path, content = file.readfile())
+    return jsonify(name = file.name, path = path, info = file.readfile())
 
 @binary_file_server.route('/binary_file', methods=['POST', 'PUT'])
 def add_binary_file():
@@ -57,7 +57,7 @@ def move_binary_file():
     path = request.args.get('path')
     new_path = request.args.get('new_path')
     try:
-        file: Directory = goto_dir(path)
+        file: BinaryFile = goto_dir(path)
         new_parent = goto_dir(new_path)
         if not (type(file) == BinaryFile and type(new_parent) == Directory):
             raise ValueError()
