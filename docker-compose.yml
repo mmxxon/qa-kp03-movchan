@@ -1,0 +1,9 @@
+services:
+  flask:
+    build: ./backend
+    restart: on-failure
+    volumes:
+      - ./backend:/backend
+    ports:
+      - "8000:3333"
+    command: python server.py
